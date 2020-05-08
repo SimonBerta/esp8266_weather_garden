@@ -9,218 +9,294 @@ $username = "esp8266";
 $password = "simon1997";
 $port = 3306;
 
-  function insertReading($value1, $value2, $value3, $value4, $value5, $value6, $value7, $value8) {
-    global $servername, $username, $password, $dbname, $port;
+	function insertReading($value1, $value2, $value3, $value4, $value5, $value6, $value7, $value8, $value9) {
+		global $servername, $username, $password, $dbname, $port;
 
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname, $port);
-    // Check connection
-    if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error);
-    }
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
 
-    $sql = "INSERT INTO sensor_data (temperature,humidity,pressure,dew_point,soil_humidity,lux,rain,rssi)
-    VALUES ('" . $value1 . "', '" . $value2 . "', '" . $value3 . "', '" . $value4 . "', '" . $value5 . "', '" . $value6 . "','" . $value7 . "','" . $value8 . "')";
+		$sql = "INSERT INTO sensor_data (temperature,humidity,pressure,dew_point,soil_humidity,lux,rain,water_level,rssi)
+		VALUES ('" . $value1 . "', '" . $value2 . "', '" . $value3 . "', '" . $value4 . "', '" . $value5 . "', '" . $value6 . "','" . $value7 . "','" . $value8 . "','" . $value9 . "')";
 
-    if ($conn->query($sql) === TRUE) {
-      return "New record created successfully";
-    }
-    else {
-      return "Error: " . $sql . "<br>" . $conn->error;
-    }
-    $conn->close();
-  }
-  function setReadingsCount($limit) {
-    global $servername, $username, $password, $dbname, $port;
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname, $port);
-    // Check connection
-    if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error);
-    }
+		if ($conn->query($sql) === TRUE) {
+		  return "New record created successfully";
+		}
+		else {
+		  return "Error: " . $sql . "<br>" . $conn->error;
+		}
+		$conn->close();
+	}
+	function setReadingsCount($limit) {
+		global $servername, $username, $password, $dbname, $port;
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
 
-    $sql = "UPDATE relay_data SET readings = $limit WHERE id=1";
+		$sql = "UPDATE relay_data SET readings = $limit WHERE id=1";
 
-    if ($conn->query($sql) === TRUE) {
-      return true;
-    }
-    else {
-      return "Error: " . $sql . "<br>" . $conn->error;
-    }
-    $conn->close();
-  }
-  function setMinDate($date) {
-    global $servername, $username, $password, $dbname, $port;
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname, $port);
-    // Check connection
-    if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error);
-    }
+		if ($conn->query($sql) === TRUE) {
+		  return true;
+		}
+		else {
+		  return "Error: " . $sql . "<br>" . $conn->error;
+		}
+		$conn->close();
+	}
+	function setMinDate($date) {
+		global $servername, $username, $password, $dbname, $port;
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
 
-    $sql = "UPDATE relay_data SET date_start = $date WHERE id=1";
+		$sql = "UPDATE relay_data SET date_start = $date WHERE id=1";
 
-    if ($conn->query($sql) === TRUE) {
-      return true;
-    }
-    else {
-      return "Error: " . $sql . "<br>" . $conn->error;
-    }
-    $conn->close();
-  }
-  function setMaxDate($date) {
-    global $servername, $username, $password, $dbname, $port;
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname, $port);
-    // Check connection
-    if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error);
-    }
+		if ($conn->query($sql) === TRUE) {
+		  return true;
+		}
+		else {
+		  return "Error: " . $sql . "<br>" . $conn->error;
+		}
+		$conn->close();
+	}
+	function setMaxDate($date) {
+		global $servername, $username, $password, $dbname, $port;
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
 
-    $sql = "UPDATE relay_data SET date_stop = $date WHERE id=1";
+		$sql = "UPDATE relay_data SET date_stop = $date WHERE id=1";
 
-    if ($conn->query($sql) === TRUE) {
-      return true;
-    }
-    else {
-      return "Error: " . $sql . "<br>" . $conn->error;
-    }
-    $conn->close();
-  }
-  function getReadingsCount() {
-    global $servername, $username, $password, $dbname, $port;
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname, $port);
-    // Check connection
-    if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error);
-    }
+		if ($conn->query($sql) === TRUE) {
+		  return true;
+		}
+		else {
+		  return "Error: " . $sql . "<br>" . $conn->error;
+		}
+		$conn->close();
+	}
+	function getReadingsCount() {
+		global $servername, $username, $password, $dbname, $port;
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
 
-    $sql = "SELECT readings FROM relay_data WHERE id=1";
+		$sql = "SELECT readings FROM relay_data WHERE id=1";
 
-    if ($result = $conn->query($sql)) {
-      return $result;
-    }
-    else {
-      return false;
-    }
-    $conn->close();
-  }
-  function getAllReadings($limit) {
-    global $servername, $username, $password, $dbname, $port;
+		if ($result = $conn->query($sql)) {
+		  return $result;
+		}
+		else {
+		  return false;
+		}
+		$conn->close();
+	}
+	function getRelayState() {
+		global $servername, $username, $password, $dbname, $port;
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
 
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname, $port);
-    // Check connection
-    if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error);
-    }
+		$sql = "SELECT relay_1,relay_2,id,automatic FROM relay_data WHERE id=1";
 
-    $sql = "SELECT id, reading_time, temperature, humidity, pressure, dew_point, soil_humidity, lux, rain, rssi FROM sensor_data order by reading_time desc limit " . $limit;
-    if ($result = $conn->query($sql)) {
-      return $result;
-    }
-    else {
-      return false;
-    }
-    $conn->close();
-  }
-  function graphAllReadings($limit) {
-    global $servername, $username, $password, $dbname, $port;
+		if ($result = $conn->query($sql)) {
+		  return $result;
+		}
+		else {
+		  return false;
+		}
+		$conn->close();
+	}
+	function setRelay1State($value) {
+		global $servername, $username, $password, $dbname, $port;
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
 
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname, $port);
-    // Check connection
-    if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error);
-    }
+		$sql = "UPDATE relay_data SET relay_1 = '{$value}' WHERE id=1";
 
-    $sql = "SELECT id, reading_time, temperature, humidity, pressure, dew_point, soil_humidity, lux, rain, rssi FROM sensor_data order by reading_time desc limit " . $limit;
-    if ($result = $conn->query($sql)) {
-      return $result;
-    }
-    else {
-      return false;
-    }
-    $conn->close();
-  }
-  function getLastReadings() {
-    global $servername, $username, $password, $dbname, $port;
+		if ($result = $conn->query($sql)) {
+		  return $result;
+		}
+		else {
+		  return false;
+		}
+		$conn->close();
+	}
+	function setRelay2State($value) {
+		global $servername, $username, $password, $dbname, $port;
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
 
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname, $port);
-    // Check connection
-    if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error);
-    }
+		$sql = "UPDATE relay_data SET relay_2 = '{$value}' WHERE id=1";
 
-    $sql = "SELECT id, reading_time, temperature, humidity, pressure, dew_point, soil_humidity, lux, rain, rssi FROM sensor_data order by reading_time desc limit 1" ;
-    if ($result = $conn->query($sql)) {
-      return $result->fetch_assoc();
-    }
-    else {
-      return false;
-    }
-    $conn->close();
-  }
+		if ($result = $conn->query($sql)) {
+		  return $result;
+		}
+		else {
+		  return false;
+		}
+		$conn->close();
+	}
+	function setAutomatic($value) {
+		global $servername, $username, $password, $dbname, $port;
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
 
-  function minReading($limit, $value) {
-     global $servername, $username, $password, $dbname, $port;
+		$sql = "UPDATE relay_data SET automatic = '{$value}' WHERE id=1";
 
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname, $port);
-    // Check connection
-    if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error);
-    }
+		if ($result = $conn->query($sql)) {
+		  return $result;
+		}
+		else {
+		  return false;
+		}
+		$conn->close();
+	}
+	function getAllReadings($limit) {
+		global $servername, $username, $password, $dbname, $port;
 
-    $sql = "SELECT MIN(" . $value . ") AS min_amount FROM (SELECT " . $value . " FROM sensor_data order by reading_time desc limit " . $limit . ") AS min";
-    if ($result = $conn->query($sql)) {
-      return $result->fetch_assoc();
-    }
-    else {
-      return false;
-    }
-    $conn->close();
-  }
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
 
-  function maxReading($limit, $value) {
-     global $servername, $username, $password, $dbname, $port;
+		$sql = "SELECT id, reading_time, temperature, humidity, pressure, dew_point, soil_humidity, lux, rain, water_level, rssi FROM sensor_data order by reading_time desc limit " . $limit;
+		if ($result = $conn->query($sql)) {
+		  return $result;
+		}
+		else {
+		  return false;
+		}
+		$conn->close();
+	}
+	function graphAllReadings($limit) {
+		global $servername, $username, $password, $dbname, $port;
 
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname, $port);
-    // Check connection
-    if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error);
-    }
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
 
-    $sql = "SELECT MAX(" . $value . ") AS max_amount FROM (SELECT " . $value . " FROM sensor_data order by reading_time desc limit " . $limit . ") AS max";
-    if ($result = $conn->query($sql)) {
-      return $result->fetch_assoc();
-    }
-    else {
-      return false;
-    }
-    $conn->close();
-  }
+		$sql = "SELECT id, reading_time, temperature, humidity, pressure, dew_point, soil_humidity, lux, rain, water_level, rssi FROM sensor_data order by reading_time desc limit " . $limit;
+		if ($result = $conn->query($sql)) {
+		  return $result;
+		}
+		else {
+		  return false;
+		}
+		$conn->close();
+	}
+	function getLastReadings() {
+		global $servername, $username, $password, $dbname, $port;
 
-  function avgReading($limit, $value) {
-     global $servername, $username, $password, $dbname, $port;
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
 
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname, $port);
-    // Check connection
-    if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error);
-    }
+		$sql = "SELECT id, reading_time, temperature, humidity, pressure, dew_point, soil_humidity, lux, rain, water_level, rssi FROM sensor_data order by reading_time desc limit 1" ;
+		if ($result = $conn->query($sql)) {
+		  return $result->fetch_assoc();
+		}
+		else {
+		  return false;
+		}
+		$conn->close();
+	}
 
-    $sql = "SELECT AVG(" . $value . ") AS avg_amount FROM (SELECT " . $value . " FROM sensor_data order by reading_time desc limit " . $limit . ") AS avg";
-    if ($result = $conn->query($sql)) {
-      return $result->fetch_assoc();
-    }
-    else {
-      return false;
-    }
-    $conn->close();
-  }
+	function minReading($limit, $value) {
+		 global $servername, $username, $password, $dbname, $port;
+
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
+
+		$sql = "SELECT MIN(" . $value . ") AS min_amount FROM (SELECT " . $value . " FROM sensor_data order by reading_time desc limit " . $limit . ") AS min";
+		if ($result = $conn->query($sql)) {
+		  return $result->fetch_assoc();
+		}
+		else {
+		  return false;
+		}
+		$conn->close();
+	}
+
+	function maxReading($limit, $value) {
+		 global $servername, $username, $password, $dbname, $port;
+
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
+
+		$sql = "SELECT MAX(" . $value . ") AS max_amount FROM (SELECT " . $value . " FROM sensor_data order by reading_time desc limit " . $limit . ") AS max";
+		if ($result = $conn->query($sql)) {
+		  return $result->fetch_assoc();
+		}
+		else {
+		  return false;
+		}
+		$conn->close();
+	}
+
+	function avgReading($limit, $value) {
+		global $servername, $username, $password, $dbname, $port;
+
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		// Check connection
+		if ($conn->connect_error) {
+		  die("Connection failed: " . $conn->connect_error);
+		}
+
+		$sql = "SELECT AVG(" . $value . ") AS avg_amount FROM (SELECT " . $value . " FROM sensor_data order by reading_time desc limit " . $limit . ") AS avg";
+		if ($result = $conn->query($sql)) {
+		  return $result->fetch_assoc();
+		}
+		else {
+		  return false;
+		}
+		$conn->close();
+	}
 ?>

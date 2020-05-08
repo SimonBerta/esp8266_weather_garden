@@ -1,4 +1,5 @@
 <?php
+
     $page = $_SERVER['PHP_SELF'];
     $sec = "15";
 
@@ -17,20 +18,17 @@
         if ($result) {
         	while ($row = $result->fetch_assoc()) {
             	$readings_count = $row["readings"];
-            	//echo '<tr>
-                    //<td>' . $readings_count . '</td>
-                  //</tr>';
 		}
 	}
-        //echo '</table>';
         $result->free();
     }
-    if (isset($_GET["datemin"])){
+    /* if (isset($_GET["datemin"])){
       $data = $_GET["datemin"];
       $data = trim($data);
       $data = stripslashes($data);
       $data = htmlspecialchars($data);
       $datemin = $_GET["datemin"];
+      setMinDate($datemin);
     } else {
       $datemin = "2020-01-01T00:00";
     }
@@ -40,9 +38,10 @@
       $data = stripslashes($data);
       $data = htmlspecialchars($data);
       $datemax = $_GET["datemax"];
+      setMaxDate($datemax);
     } else {
       $datemax = "2020-01-01T00:00";
-    }
+    } */
 
     $last_reading = getLastReadings();
     $last_reading_time = $last_reading["reading_time"];
@@ -52,8 +51,10 @@
     $last_reading_dew_p = $last_reading["dew_point"];  
     $last_reading_soil = $last_reading["soil_humidity"];  
     $last_reading_lux = $last_reading["lux"];
-    $last_reading_rain = $last_reading["rain"];
+    $last_reading_rain = $last_reading["rain"];  
+    $last_reading_water = $last_reading["water_level"];
     $last_reading_rssi = $last_reading["rssi"];
+    
 
     $min_temp = minReading($readings_count, 'temperature');
     $max_temp = maxReading($readings_count, 'temperature');
@@ -84,6 +85,10 @@
     $max_rain = maxReading($readings_count, 'rain');
     $avg_rain = avgReading($readings_count, 'rain');
 
+    $min_water = minReading($readings_count, 'water_level');
+    $max_water = maxReading($readings_count, 'water_level');
+    $avg_water = avgReading($readings_count, 'water_level');
+
     $min_rssi = minReading($readings_count, 'rssi');
     $max_rssi = maxReading($readings_count, 'rssi');
     $avg_rssi = avgReading($readings_count, 'rssi');
@@ -96,7 +101,7 @@
   <style>
     body {
         min-width: 310px;
-    	max-width: 1280px;
+    	max-width: 1080px;
     	height: 500px;
         margin: 0 auto;
     }
@@ -113,47 +118,136 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     </head>
     <header class="header">
-        <h1>ESP8266 weather station with irrigation control</h1>
+        <h1> <img src="station.png" alt="weather station logo" style="width:50px;height:50px;"> <font color="blue">ESP8266</font> Weather station with irrigation control</h1>
         <form method="get">
             <input type="number" name="readingsCount" min="1" placeholder="Number of readings (<?php echo $readings_count; ?>)">
             <input type="submit" value="UPDATE">
         </form>
+	<br>
+	<!--<br>
 	<form method="get">
             <label for="datemin">Start date and time:</label>
-            <input type="datetime-local" name="datemin" (<?php echo $datemin; ?>)">
-            <input type="submit" value="SET">
+            <input type="datetime-local" name="datemin">
         </form>
 	<form method="get">
             <label for="datemax">Stop date and time:</label>
-            <input type="datetime-local" name="datemax" (<?php echo $datemax; ?>)">
+            <input type="datetime-local" name="datemax">
+	    <br>
+	    <br>
             <input type="submit" value="SET">
-        </form>
+        </form>//-->
     </header>
 <body>
+<?php
+	function reloadRelays() {
+		$result = getRelayState();
+			if ($result) {
+				while ($row = $result->fetch_assoc()) {
+					$relay1 = $row["relay_1"];
+					$relay2 = $row["relay_2"];
+					$automatic = $row["automatic"];
+					$unit_id = $row["id"];
+				}
+			}
+			$result->free();
+		return array($relay1, $relay2, $automatic);
+	}  
+		list($relay1, $relay2, $automatic)= reloadRelays();
+		if($relay1 == 1){
+		$inv_relay1 = 0;
+		$text_relay1 = "ON";
+		$color_relay1 = "#6ed829";
+		}
+		else{
+		$inv_relay1 = 1;
+		$text_relay1 = "OFF";
+		$color_relay1 = "#e04141";
+		}
+		
+		if($relay2 == 1){
+		$inv_relay2 = 0;
+		$text_relay2 = "ON";
+		$color_relay2 = "#6ed829";
+		}
+		else{
+		$inv_relay2 = 1;
+		$text_relay2 = "OFF";
+		$color_relay2 = "#e04141";
+		}
+		
+		if($automatic == 1){
+		$inv_automatic = 0;
+		$text_automatic = "ON";
+		$color_automatic = "#6ed829";
+		}
+		else{
+		$inv_automatic = 1;
+		$text_automatic = "OFF";
+		$color_automatic = "#e04141";
+		}
+?>
+
+	<table class='table' id="relays" style='font-size: 30px;'>
+		<thead style='text-align:right;'>
+			   <h2>Relays and auto/man switch</h2>
+		</thead>
+			<tbody>
+			<tr> <!--class='active'//-->
+				<td>Relay 1</td>
+				<td>&nbsp;</td>
+				<td>Relay 2</td>
+				<td>&emsp;&emsp;&ensp;&nbsp;</td>
+				<td>Automatic</td>
+			</tr>
+				<td><form method= 'POST'>
+				<input type='hidden' name='value1' value=<?php echo $relay1; ?>>
+				<input type="submit" onclick="<?php 
+					if (isset($_POST["value1"])){
+						if ($_POST["value1"]==0) {setRelay1State(1); header("Refresh:0");} 
+						else {setRelay1State(0);header("Refresh:0");}}
+						?>" style='width:100px;height:50px;margin:0 50%;position:relative;left:-50px; font-size: 30px; text-align:center; background-color: <?php echo $color_relay1; ?>;' value=<?php echo $text_relay1; ?> ></form></td>
+				<td><form method= 'POST'>
+				<input type='hidden' name='value2' value=<?php echo $relay2; ?>>
+				<input type="submit" onclick="<?php 
+					if (isset($_POST["value2"])){
+						if ($_POST["value2"]==0) {setRelay2State(1);header("Refresh:0");} 
+						else {setRelay2State(0);header("Refresh:0");}}
+						?>" style='width:100px;height:50px;margin:0 50%;position:relative;left:+55px; font-size: 30px; text-align:center; background-color: <?php echo $color_relay2; ?>;' value=<?php echo $text_relay2; ?> ></form></td>
+				<td><form method= 'POST'>
+				<input type='hidden' name='value3' value=<?php echo $automatic; ?>>
+				<input type="submit" onclick="<?php 
+					if (isset($_POST["value3"])){
+						if ($_POST["value3"]==0) {setAutomatic(1);header("Refresh:0");} 
+						else {setAutomatic(0);header("Refresh:0");}}
+						?>" style='width:100px;height:50px;margin:0 50%;position:relative;left:+155px; font-size: 30px; text-align:center; background-color: <?php echo $color_automatic; ?>;' value=<?php echo $text_automatic; ?> ></form></td>
+			</tr>
+			</tbody> 
+	</table>
+	<br>
     <p>Last reading: <?php echo $last_reading_time; ?></p>
     <section class="content">
 	    <div class="box gauge--1">
-	    <h3>TEMPERATURE</h3>
-              <div class="mask">
-			  <div class="semi-circle"></div>
-			  <div class="semi-circle--mask"></div>
+			<h3>TEMPERATURE</h3>
+			<div class="mask">
+				 <div class="semi-circle"></div>
+				 <div class="semi-circle--mask"></div>
 			</div>
-		    <p style="font-size: 30px;" id="temp">--</p>
-		    <table cellspacing="5" cellpadding="5">
-		        <tr>
-		            <th colspan="3">Temperature <?php echo $readings_count; ?> readings</th>
-	            </tr>
-		        <tr>
-		            <td>Min</td>
-                    <td>Max</td>
-                    <td>Average</td>
-                </tr>
-                <tr>
-                    <td><?php echo $min_temp['min_amount']; ?> &deg;C</td>
-                    <td><?php echo $max_temp['max_amount']; ?> &deg;C</td>
-                    <td><?php echo round($avg_temp['avg_amount'], 2); ?> &deg;C</td>
-                </tr>
-            </table>
+			<p style="font-size: 30px;" id="temp">--</p>
+			<table cellspacing="5" cellpadding="5">
+				<tr>
+					<th colspan="3">Temperature <?php echo $readings_count; ?> readings</th>
+				</tr>
+				<tr>
+					<td>Min</td>
+					<td>Max</td>
+					<td>Average</td>
+				</tr>
+				<tr>
+					<td><?php echo $min_temp['min_amount']; ?> &deg;C</td>
+					<td><?php echo $max_temp['max_amount']; ?> &deg;C</td>
+					<td><?php echo round($avg_temp['avg_amount'], 2); ?> &deg;C</td>
+				</tr>
+			</table>
         </div>
         <div class="box gauge--2">
             <h3>HUMIDITY</h3>
@@ -178,98 +272,144 @@
                 </tr>
             </table>
         </div>
-	<div class="box gauge--3">
-	    <h3>PRESSURE</h3>
-              <div class="mask">
-			  <div class="semi-circle"></div>
-			  <div class="semi-circle--mask"></div>
+		<div class="box gauge--3">
+			<h3>PRESSURE</h3>
+			<div class="mask">
+				<div class="semi-circle"></div>
+				<div class="semi-circle--mask"></div>
 			</div>
-		    <p style="font-size: 30px;" id="press">--</p>
-		    <table cellspacing="5" cellpadding="5">
-		        <tr>
-		            <th colspan="3">Pressure <?php echo $readings_count; ?> readings</th>
-	            </tr>
-		        <tr>
-		            <td>Min</td>
-                    <td>Max</td>
-                    <td>Average</td>
-                </tr>
-                <tr>
-                    <td><?php echo $min_press['min_amount']; ?> hPa</td>
-                    <td><?php echo $max_press['max_amount']; ?> hPa</td>
-                    <td><?php echo round($avg_press['avg_amount'], 2); ?> hPa</td>
-                </tr>
-            </table>
-        </div>
-	<div class="box gauge--4">
-	    <h3>SOIL HUMIDITY</h3>
-              <div class="mask">
-			  <div class="semi-circle"></div>
-			  <div class="semi-circle--mask"></div>
+			<p style="font-size: 30px;" id="press">--</p>
+			<table cellspacing="5" cellpadding="5">
+				<tr>
+					<th colspan="3">Pressure <?php echo $readings_count; ?> readings</th>
+				</tr>
+				<tr>
+					<td>Min</td>
+					<td>Max</td>
+					<td>Average</td>
+				</tr>
+				<tr>
+					<td><?php echo $min_press['min_amount']; ?> hPa</td>
+					<td><?php echo $max_press['max_amount']; ?> hPa</td>
+					<td><?php echo round($avg_press['avg_amount'], 2); ?> hPa</td>
+				</tr>
+			</table>
+		</div>
+		<div class="box gauge--4">
+			<h3>SOIL HUMIDITY</h3>
+			<div class="mask">
+				<div class="semi-circle"></div>
+				<div class="semi-circle--mask"></div>
 			</div>
-		    <p style="font-size: 30px;" id="soil">--</p>
-		    <table cellspacing="5" cellpadding="5">
-		        <tr>
-		            <th colspan="3">Soil humidity <?php echo $readings_count; ?> readings</th>
-	            </tr>
-		        <tr>
-		            <td>Min</td>
-                    <td>Max</td>
-                    <td>Average</td>
-                </tr>
-                <tr>
-                    <td><?php echo $min_soil['min_amount']; ?> %</td>
-                    <td><?php echo $max_soil['max_amount']; ?> %</td>
-                    <td><?php echo round($avg_soil['avg_amount'], 2); ?> %</td>
-                </tr>
-            </table>
-        </div>
+			<p style="font-size: 30px;" id="soil">--</p>
+			<table cellspacing="5" cellpadding="5">
+				<tr>
+					<th colspan="3">Soil humidity <?php echo $readings_count; ?> readings</th>
+				</tr>
+				<tr>
+					<td>Min</td>
+					<td>Max</td>
+					<td>Average</td>
+				</tr>
+				<tr>
+					<td><?php echo $min_soil['min_amount']; ?> %</td>
+					<td><?php echo $max_soil['max_amount']; ?> %</td>
+					<td><?php echo round($avg_soil['avg_amount'], 2); ?> %</td>
+				</tr>
+			</table>
+		</div>
 	<div class="box gauge--5">
 	    <h3>LIGHT INTENSITY</h3>
-              <div class="mask">
-			  <div class="semi-circle"></div>
-			  <div class="semi-circle--mask"></div>
-			</div>
-		    <p style="font-size: 30px;" id="lux">--</p>
-		    <table cellspacing="5" cellpadding="5">
-		        <tr>
-		            <th colspan="3">Lux <?php echo $readings_count; ?> readings</th>
-	            </tr>
-		        <tr>
-		            <td>Min</td>
-                    <td>Max</td>
-                    <td>Average</td>
-                </tr>
-                <tr>
-                    <td><?php echo $min_lux['min_amount']; ?> lux</td>
-                    <td><?php echo $max_lux['max_amount']; ?> lux</td>
-                    <td><?php echo round($avg_lux['avg_amount'], 2); ?> lux</td>
-                </tr>
-            </table>
-        </div>
+        <div class="mask">
+			<div class="semi-circle"></div>
+			<div class="semi-circle--mask"></div>
+		</div>
+		<p style="font-size: 30px;" id="lux">--</p>
+		<table cellspacing="5" cellpadding="5">
+		    <tr>
+				<th colspan="3">Lux <?php echo $readings_count; ?> readings</th>
+	        </tr>
+		    <tr>
+		        <td>Min</td>
+                <td>Max</td>
+                <td>Average</td>
+            </tr>
+            <tr>
+                <td><?php echo $min_lux['min_amount']; ?> lux</td>
+                <td><?php echo $max_lux['max_amount']; ?> lux</td>
+                <td><?php echo round($avg_lux['avg_amount'], 2); ?> lux</td>
+             </tr>
+        </table>
+    </div>
 	<div class="box gauge--6">
+	    <h3>RAIN</h3>
+        <div class="mask">
+			<div class="semi-circle"></div>
+			<div class="semi-circle--mask"></div>
+		</div>
+		<p style="font-size: 30px;" id="rain">--</p>
+		<table cellspacing="5" cellpadding="5">
+		    <tr>
+		        <th colspan="3">Rain <?php echo $readings_count; ?> readings</th>
+	        </tr>
+		    <tr>
+		        <td>Min</td>
+                <td>Max</td>
+                <td>Average</td>
+            </tr>
+            <tr>
+                <td><?php echo $min_rain['min_amount']; ?> </td>
+                <td><?php echo $max_rain['max_amount']; ?> </td>
+                <td><?php echo round($avg_rain['avg_amount'], 2); ?> </td>
+            </tr>
+        </table>
+    </div>
+	<div class="box gauge--7">
+	    <h3>WATER LEVEL</h3>
+        <div class="mask">
+			<div class="semi-circle"></div>
+			<div class="semi-circle--mask"></div>
+		</div>
+		<p style="font-size: 30px;" id="water">--</p>
+		<table cellspacing="5" cellpadding="5">
+		    <tr>
+		        <th colspan="3">Water level <?php echo $readings_count; ?> readings</th>
+	        </tr>
+		    <tr>
+		        <td>Min</td>
+                <td>Max</td>
+                <td>Average</td>
+            </tr>
+            <tr>
+                <td><?php echo $min_water['min_amount']; ?> litres</td>
+                <td><?php echo $max_water['max_amount']; ?> litres</td>
+                <td><?php echo round($avg_water['avg_amount'], 2); ?> litres</td>
+            </tr>
+        </table>
+    </div>
+	<div class="box gauge--8">
 	    <h3>RSSI</h3>
-              <div class="mask">
-			  <div class="semi-circle"></div>
-			  <div class="semi-circle--mask"></div>
-			</div>
-		    <p style="font-size: 30px;" id="rssi">--</p>
-		    <table cellspacing="5" cellpadding="5">
-		        <tr>
-		            <th colspan="3">RSSI <?php echo $readings_count; ?> readings</th>
-	            </tr>
-		        <tr>
-		            <td>Min</td>
-                    <td>Max</td>
-                    <td>Average</td>
-                </tr>
-                <tr>
-                    <td><?php echo $min_rssi['min_amount']; ?> dBm</td>
-                    <td><?php echo $max_rssi['max_amount']; ?> dBm</td>
-                    <td><?php echo round($avg_rssi['avg_amount'], 2); ?> dBm</td>
-                </tr>
-            </table>
-        </div>
+        <div class="mask">
+			<div class="semi-circle"></div>
+			<div class="semi-circle--mask"></div>
+		</div>
+		<p style="font-size: 30px;" id="rssi">--</p>
+		<table cellspacing="5" cellpadding="5">
+		    <tr>
+		        <th colspan="3">RSSI <?php echo $readings_count; ?> readings</th>
+	        </tr>
+		    <tr>
+		        <td>Min</td>
+                <td>Max</td>
+                <td>Average</td>
+            </tr>
+            <tr>
+                <td><?php echo $min_rssi['min_amount']; ?> dBm</td>
+                <td><?php echo $max_rssi['max_amount']; ?> dBm</td>
+                <td><?php echo round($avg_rssi['avg_amount'], 2); ?> dBm</td>
+            </tr>
+        </table>
+    </div>
     </section>
 <?php
     echo   '<h2> Graphs of Latest ' . $readings_count . ' Readings</h2>';
@@ -286,63 +426,72 @@
 	$val5 = json_encode(array_reverse(array_column($sensor_data, 'soil_humidity')), JSON_NUMERIC_CHECK);
 	$val6 = json_encode(array_reverse(array_column($sensor_data, 'lux')), JSON_NUMERIC_CHECK);
 	$val7 = json_encode(array_reverse(array_column($sensor_data, 'rain')), JSON_NUMERIC_CHECK);
-	$val8 = json_encode(array_reverse(array_column($sensor_data, 'rssi')), JSON_NUMERIC_CHECK);
+	$val7 = json_encode(array_reverse(array_column($sensor_data, 'rain')), JSON_NUMERIC_CHECK);
+	$val8 = json_encode(array_reverse(array_column($sensor_data, 'water_level')), JSON_NUMERIC_CHECK);
+	$val9 = json_encode(array_reverse(array_column($sensor_data, 'rssi')), JSON_NUMERIC_CHECK);
 	$read_time = json_encode(array_reverse(array_column($sensor_data, 'reading_time')), JSON_NUMERIC_CHECK);
 	}
         $result->free();
 ?>
-    <div id="chart-temperature" class="container"></div>
-    <div id="chart-humidity" class="container"></div>
-    <div id="chart-pressure" class="container"></div>
-    <div id="chart-soil" class="container"></div>
-    <div id="chart-lux" class="container"></div>
-    <div id="chart-rssi" class="container"></div>
-<?php
-    echo   '<h2> View Latest ' . $readings_count . ' Readings</h2>
-            <table cellspacing="5" cellpadding="5" id="tableReadings">
-                <tr>
-                    <th>ID</th>
+	<div class="grid-container">
+		<div class="grid-item" id="chart-temperature"></div>
+  		<div class="grid-item" id="chart-humidity"></div>
+  		<div class="grid-item" id="chart-pressure"></div>  
+  		<div class="grid-item" id="chart-soil"></div>
+  		<div class="grid-item" id="chart-lux"></div>
+  		<div class="grid-item" id="chart-rain"></div>
+  		<div class="grid-item" id="chart-water"></div>
+  		<div class="grid-item" id="chart-rssi"></div>  
+	</div>    
+
+	<h2>View Latest <?php echo $readings_count ?> Readings</h2>
+    <table cellspacing="5" cellpadding="5" id="tableReadings">
+        <tr>
+            <th>ID</th>
 		    <th>Timestamp</th>
-                    <th>Temperature (°C)</th>
-                    <th>Humidity (%)</th>
-                    <th>Pressure (hPa)</th>
+            <th>Temperature (°C)</th>
+            <th>Humidity (%)</th>
+            <th>Pressure (hPa)</th>
 		    <th>Dew point (°C)</th>
 		    <th>Soil humidity (%)</th>
 		    <th>Light intensity (lux)</th>
 		    <th>Rain (Y/N)</th>
+			<th>Water level (litres)</th>
 		    <th>RSSI (dBm)</th>
-                </tr>';
-
+        </tr>;
+<?php
     $result = getAllReadings($readings_count);
         if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            $row_id = $row["id"];
-            $row_reading_time = $row["reading_time"];
-            $row_temperature = $row["temperature"];
-            $row_humidity = $row["humidity"];
-            $row_pressure = $row["pressure"];
-            $row_dew_p = $row["dew_point"];
-            $row_soil = $row["soil_humidity"];
-	    $row_lux = $row["lux"];
-	    $row_rain = $row["rain"];
-	    $row_rssi = $row["rssi"];
+			while ($row = $result->fetch_assoc()) {
+				$row_id = $row["id"];
+				$row_reading_time = $row["reading_time"];
+				$row_temperature = $row["temperature"];
+				$row_humidity = $row["humidity"];
+				$row_pressure = $row["pressure"];
+				$row_dew_p = $row["dew_point"];
+				$row_soil = $row["soil_humidity"];
+				$row_lux = $row["lux"];
+				$row_rain = $row["rain"];
+				$row_water = $row["water_level"];
+				$row_rssi = $row["rssi"];
 
-            echo '<tr>
-                    <td>' . $row_id . '</td>
-                    <td>' . $row_reading_time . '</td>
-                    <td>' . $row_temperature . '</td>
-                    <td>' . $row_humidity . '</td>
-                    <td>' . $row_pressure . '</td>
-		    <td>' . $row_dew_p . '</td>
-		    <td>' . $row_soil . '</td>
-		    <td>' . $row_lux . '</td>
-		    <td>' . $row_rain . '</td>
-		    <td>' . $row_rssi . '</td>
-                  </tr>';
-        }
-        echo '</table>';
-        $result->free();
-    }
+				echo '<tr>
+					<td>' . $row_id . '</td>
+					<td>' . $row_reading_time . '</td>
+					<td>' . $row_temperature . '</td>
+					<td>' . $row_humidity . '</td>
+					<td>' . $row_pressure . '</td>
+					<td>' . $row_dew_p . '</td>
+					<td>' . $row_soil . '</td>
+					<td>' . $row_lux . '</td>
+					<td>' . $row_rain . '</td>
+					<td>' . $row_water . '</td>
+					<td>' . $row_rssi . '</td>
+				</tr>';
+			}
+			echo '</table>';
+			$result->free();
+		}
 ?>
 
 <script>
@@ -351,13 +500,17 @@
     var value3 = <?php echo $last_reading_press; ?>;
     var value4 = <?php echo $last_reading_soil; ?>;
     var value5 = <?php echo $last_reading_lux; ?>;
-    var value6 = <?php echo $last_reading_rssi; ?>;
+    var value6 = <?php echo $last_reading_rain; ?>;
+	var value7 = <?php echo $last_reading_water; ?>;
+	var value8 = <?php echo $last_reading_rssi; ?>;
     setTemperature(value1);
     setHumidity(value2);
     setPressure(value3);
     setSoil(value4);
     setLux(value5);
-    setRSSI(value6);
+	setRain(value6);
+	setWater(value7);
+    setRSSI(value8);
 
     function setTemperature(curVal){
     	//set range for Temperature in Celsius -5 Celsius to 38 Celsius
@@ -425,13 +578,39 @@
     	});
     	$("#lux").text(curVal + ' lux');
     }
+	function setRain(curVal){
+    	//set range for rain 0 to 1
+    	var minRain = 0;
+    	var maxRain = 1;
+
+    	var newVal = scaleValue(curVal, [minRain, maxRain], [0, 180]);
+    	$('.gauge--6 .semi-circle--mask').attr({
+    		style: '-webkit-transform: rotate(' + newVal + 'deg);' +
+    		'-moz-transform: rotate(' + newVal + 'deg);' +
+    		'transform: rotate(' + newVal + 'deg);'
+    	});
+    	$("#rain").text(curVal + ' ');
+    }
+	function setWater(curVal){
+    	//set range for water in litres 0 to 1100
+    	var minWater = 0;
+    	var maxWater = 1100;
+
+    	var newVal = scaleValue(curVal, [minWater, maxWater], [0, 180]);
+    	$('.gauge--7 .semi-circle--mask').attr({
+    		style: '-webkit-transform: rotate(' + newVal + 'deg);' +
+    		'-moz-transform: rotate(' + newVal + 'deg);' +
+    		'transform: rotate(' + newVal + 'deg);'
+    	});
+    	$("#water").text(curVal + ' litres');
+    }
     function setRSSI(curVal){
     	//set range for rssi in dBm 0 to 100
     	var minRssi = -100;
     	var maxRssi = 0;
 
     	var newVal = scaleValue(curVal, [minRssi, maxRssi], [0, 180]);
-    	$('.gauge--6 .semi-circle--mask').attr({
+    	$('.gauge--8 .semi-circle--mask').attr({
     		style: '-webkit-transform: rotate(' + newVal + 'deg);' +
     		'-moz-transform: rotate(' + newVal + 'deg);' +
     		'transform: rotate(' + newVal + 'deg);'
@@ -445,7 +624,6 @@
     }
 </script>
 <script>
-
 var val1 = <?php echo $val1; ?>;
 var val2 = <?php echo $val2; ?>;
 var val3 = <?php echo $val3; ?>;
@@ -454,6 +632,7 @@ var val5 = <?php echo $val5; ?>;
 var val6 = <?php echo $val6; ?>;
 var val7 = <?php echo $val7; ?>;
 var val8 = <?php echo $val8; ?>;
+var val9 = <?php echo $val9; ?>;
 var read_time = <?php echo $read_time; ?>;
 
 var chartT = new Highcharts.Chart({
@@ -572,13 +751,56 @@ var chartL = new Highcharts.Chart({
   },
   credits: { enabled: false }
 });
-
+var chartRa = new Highcharts.Chart({
+  chart:{ renderTo:'chart-rain' },
+  title: { text: 'Rain' },
+  series: [{
+    showInLegend: false,
+    data: val7
+  }],
+  plotOptions: {
+    line: { animation: false,
+      dataLabels: { enabled: true }
+    },
+    series: { color: '#000000' }
+  },
+  xAxis: {
+    type: 'datetime',
+    categories: read_time
+  },
+  yAxis: {
+    title: { text: 'Rain (Y/N)' }
+  },
+  credits: { enabled: false }
+});
+var chartW = new Highcharts.Chart({
+  chart:{ renderTo:'chart-water' },
+  title: { text: 'Water level' },
+  series: [{
+    showInLegend: false,
+    data: val8
+  }],
+  plotOptions: {
+    line: { animation: false,
+      dataLabels: { enabled: true }
+    },
+    series: { color: '#00d0f5' }
+  },
+  xAxis: {
+    type: 'datetime',
+    categories: read_time
+  },
+  yAxis: {
+    title: { text: 'Water level (litres)' }
+  },
+  credits: { enabled: false }
+});
 var chartR = new Highcharts.Chart({
   chart:{ renderTo:'chart-rssi' },
   title: { text: 'RSSI' },
   series: [{
     showInLegend: false,
-    data: val8
+    data: val9
   }],
   plotOptions: {
     line: { animation: false,
