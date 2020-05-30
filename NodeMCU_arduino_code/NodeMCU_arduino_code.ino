@@ -21,8 +21,8 @@ int error = 0;
 int rel1 = 0, rel2 = 0, counter1 = 0, counter2 = 0;
 const int sleepTimeS = 15; //data send interval to database
 //Network credentials
-const char* ssid     = "TP-Link_289D";
-const char* password = "simon1997";
+const char* ssid     = "insert your ssid";
+const char* password = "insert your password";
 
 //IP addresses and paths to php code running on server
 const char* serverName = "http://192.168.0.110/post-esp-data.php"; //POST data
@@ -50,7 +50,7 @@ void setup() {
   }
   WiFi.hostname("ESP-host");
   WiFi.begin(ssid, password);
-  Serial.println("Connecting");//wifi connection establish
+  Serial.println("Connecting");//wifi connection establishment with credentials
   while (WiFi.status() != WL_CONNECTED) { //while not connected print dots
     delay(500);
     Serial.print(".");
