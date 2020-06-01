@@ -116,7 +116,7 @@
     <header class="header">
         <h1> <img src="station.png" alt="weather station logo" style="width:50px;height:50px;"> <font color="blue">ESP8266</font> Weather station with irrigation control</h1> <!--include meteostation logo, add main header//-->
         <form method="get"> <!--define form with update button//-->
-            <input type="number" name="readingsCount" min="1" placeholder="Number of readings (<?php echo $readings_count; ?>)"> <!--show number of selected readings in form//-->
+            <input type="number" style="width:200px;height:20px;" name="readingsCount" min="1" placeholder="Number of readings (<?php echo $readings_count; ?>)"> <!--show number of selected readings in form//-->
             <input type="submit" value="UPDATE"> <!--update button//-->
         </form>
 	<br>
@@ -178,21 +178,16 @@
 		$text_log = "Start";
 		$color_log = "#6ed829";
 	}
-?>	<table class='table' id="logenable" style='font-size: 30px;'> <!--create table for buttons and names//-->
-	<thead style='text-align:right;'>
-			   <h2>Log data to database</h2> <!--main header //-->
-	</thead>
-		<tbody>
-		<td><form method= 'POST'> <!--button with POST functionality//-->
+?>
+	<h2>Log data from sensors to database</h2> <!--add header //-->
+	<form method= 'POST'> <!--button with POST functionality//-->
 			<input type='hidden' name='value0' value=<?php echo $log_enable; ?>> <!--variable value0 is hidden, and is changed when button pressed//-->
 			<input type="submit" onclick="<?php  //do action on button click
 				if (isset($_POST["value0"])){
 					if ($_POST["value0"]==0) {setLog(1);header("Refresh:0");} //if variable value0 is 0, set log enable to 1 and send it to database via function setLog and refresh page to see the change
 					else {setLog(0);header("Refresh:0");}} //similarly, when log enable is set to 1, set it to 0 and refresh
 					?>" style='width:100px;height:50px;margin:0 50%;position:relative;left:-50px; font-size: 30px; text-align:center; background-color: <?php echo $color_log; ?>;' value=<?php echo $text_log; ?> > <!--set dimensions and style of button, align it on page//-->
-		</form></td> 
-		</tbody>
-	</table>
+	</form>
 
 	<table class='table' id="relays" style='font-size: 30px;'> <!--create table for buttons and names//-->
 		<thead style='text-align:right;'>
