@@ -1,6 +1,6 @@
 # ESP8266 (NodeMCU v1.0) Weather station with irrigation control
 ## Description:
-NodeMCU control unit is used for data acquisition and relay control. Server is running on Windows machine (WAMP server). Data is being stored in SQL database. Client can be opened on any device with internet browser on the same network. Automatic/manual control of irrigation and water tank refilling can be switched from website. Data is visualised with graphs, gauges and a list table on client with an option for selecting the number of last records in database to be showed.
+NodeMCU control unit is used for data acquisition and relay control. Server is running on Windows machine (WAMP server). Data is being stored in SQL database. Client can be opened on any device with internet browser on the same network. Automatic/manual control of irrigation and water tank refilling can be switched from website. Data logging can be turned on and off. Data is visualised with graphs, gauges and a list table on client with an option for selecting the number of last records in database to be showed.
 ## Changes:
 - 2020-01-06 Added button for logging (data from sensors to database) control (logging start/stop)
 - 2020-30-05 Minor changes in code, Added comments to lines in code
