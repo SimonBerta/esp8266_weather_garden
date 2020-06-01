@@ -120,36 +120,24 @@
             <input type="submit" value="UPDATE"> <!--update button//-->
         </form>
 	<br>
-	<!--unused code//-->
-	<!--<br>
-	<form method="get">
-            <label for="datemin">Start date and time:</label>
-            <input type="datetime-local" name="datemin">
-        </form>
-	<form method="get">
-            <label for="datemax">Stop date and time:</label>
-            <input type="datetime-local" name="datemax">
-	    <br>
-	    <br>
-            <input type="submit" value="SET">
-        </form>//-->
     </header>
 <body>
 <?php
-	function reloadRelays() { //defined functon for getting states of relays and auto/man switch from database
+	function reloadStates() { //defined functon for getting states of relays, auto/man switch and log enable from database
 		$result = getRelayState();
 			if ($result) {
 				while ($row = $result->fetch_assoc()) {
 					$relay1 = $row["relay_1"];
 					$relay2 = $row["relay_2"];
 					$automatic = $row["automatic"];
+					$log_enable = $row["log_enable"];
 				}
 			}
 			$result->free();
-		return array($relay1, $relay2, $automatic);
+		return array($relay1, $relay2, $automatic, $log_enable);
 	}
-	//set color and text of buttons according to the states from database 1/ON-green, 0/OFF-red
-	list($relay1, $relay2, $automatic)= reloadRelays();
+	//set color and text of buttons according to the states from database 1/ON-green, 0/OFF-red, set color and state of log enable button Start-green, Stop-red
+	list($relay1, $relay2, $automatic, $log_enable)= reloadStates();
 	if($relay1 == 1){ 
 		$inv_relay1 = 0;
 		$text_relay1 = "ON";
@@ -180,7 +168,31 @@
 		$text_automatic = "OFF";
 		$color_automatic = "#e04141";
 	}
-?>
+	if($log_enable == 1){ 
+		$inv_log = 0;
+		$text_log = "Stop";
+		$color_log = "#e04141";
+	}
+	else{
+		$inv_log = 1;
+		$text_log = "Start";
+		$color_log = "#6ed829";
+	}
+?>	<table class='table' id="logenable" style='font-size: 30px;'> <!--create table for buttons and names//-->
+	<thead style='text-align:right;'>
+			   <h2>Log data to database</h2> <!--main header //-->
+	</thead>
+		<tbody>
+		<td><form method= 'POST'> <!--button with POST functionality//-->
+			<input type='hidden' name='value0' value=<?php echo $log_enable; ?>> <!--variable value0 is hidden, and is changed when button pressed//-->
+			<input type="submit" onclick="<?php  //do action on button click
+				if (isset($_POST["value0"])){
+					if ($_POST["value0"]==0) {setLog(1);header("Refresh:0");} //if variable value0 is 0, set log enable to 1 and send it to database via function setLog and refresh page to see the change
+					else {setLog(0);header("Refresh:0");}} //similarly, when log enable is set to 1, set it to 0 and refresh
+					?>" style='width:100px;height:50px;margin:0 50%;position:relative;left:-50px; font-size: 30px; text-align:center; background-color: <?php echo $color_log; ?>;' value=<?php echo $text_log; ?> > <!--set dimensions and style of button, align it on page//-->
+		</form></td> 
+		</tbody>
+	</table>
 
 	<table class='table' id="relays" style='font-size: 30px;'> <!--create table for buttons and names//-->
 		<thead style='text-align:right;'>

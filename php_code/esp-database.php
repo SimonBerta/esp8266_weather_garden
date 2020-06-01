@@ -104,7 +104,7 @@
 			die("Connection failed: " . $conn->connect_error);
 		}
 
-		$sql = "SELECT relay_1,relay_2,id,automatic FROM relay_data WHERE id=1";
+		$sql = "SELECT relay_1,relay_2,id,automatic,log_enable FROM relay_data WHERE id=1";
 
 		if ($result = $conn->query($sql)) {
 			return $result;
@@ -162,6 +162,23 @@
 		}
 		else {
 			return "State of auto/man not updated";
+		}
+		$conn->close();
+	}
+	function setLog($value) { //function sets state of log enable switch in database
+		global $servername, $username, $password, $dbname, $port;
+		$conn = new mysqli($servername, $username, $password, $dbname, $port);
+		if ($conn->connect_error) {
+			die("Connection failed: " . $conn->connect_error);
+		}
+
+		$sql = "UPDATE relay_data SET log_enable = '{$value}' WHERE id=1"; //sql code for data update in table relay_data
+
+		if ($conn->query($sql) === TRUE) {
+			return "State of log_enable updated successfully"; 
+		}
+		else {
+			return "State of log_enable not updated";
 		}
 		$conn->close();
 	}

@@ -54,13 +54,14 @@
 			$value1 = test_input($_POST["relay1"]); //if matched than asign values from request to value1-3
 			$value2 = test_input($_POST["relay2"]);
 			$value3 = test_input($_POST["automan"]);
+			$value4 = test_input($_POST["log_enable"]);
 
 			$conn = new mysqli($servername, $username, $password, $dbname, $port);
 			if ($conn->connect_error) {
 				die("Connection failed: " . $conn->connect_error);
 			} 
 			
-			$sql = "UPDATE relay_data SET relay_1 = '{$value1}',relay_2 = '{$value2}',automatic = '{$value3}' WHERE id=1"; //update relay_data table with values from NodeMCU
+			$sql = "UPDATE relay_data SET relay_1 = '{$value1}',relay_2 = '{$value2}',automatic = '{$value3}',log_enable = '{$value4}' WHERE id=1"; //update relay_data table with values from NodeMCU
 			
 			if ($conn->query($sql) === TRUE) {
 				echo "New record created successfully";
@@ -86,7 +87,8 @@
 						$relay1 = $row["relay_1"];
 						$relay2 = $row["relay_2"];
 						$automatic = $row["automatic"];
-						$rows = array("relay1"=>$relay1,"relay2"=>$relay2,"automatic"=>$automatic); //make array of data
+						$log_enable = $row["log_enable"];
+						$rows = array("relay1"=>$relay1,"relay2"=>$relay2,"automatic"=>$automatic,"log_enable"=>$log_enable); //make array of data
 					}
 				}
 				echo json_encode($rows);//make JSON serial structure from gathered data and return it to client
