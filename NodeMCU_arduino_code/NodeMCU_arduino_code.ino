@@ -17,12 +17,13 @@
 float litres, lastlitres, dist, soil, rain;
 double lastmillis, lastmillis2, lastmillis3;
 int automatic = 0;
+int log_enable = 0;
 int error = 0;
 int rel1 = 0, rel2 = 0, counter1 = 0, counter2 = 0;
 const int sleepTimeS = 15; //data send interval to database
 //Network credentials
-const char* ssid     = "insert your ssid";
-const char* password = "insert your password";
+const char* ssid     = "";
+const char* password = "";
 
 //IP addresses and paths to php code running on server
 const char* serverName = "http://192.168.0.110/post-esp-data.php"; //POST data
@@ -154,11 +155,13 @@ void  httpPOST2() { //function to send states of relays and auto/man control to 
 }
 void loop() {
   if (WiFi.status() == WL_CONNECTED) { //if connected to wifi
-    if (millis() - lastmillis > sleepTimeS * 1000) { //do this if every sleepTimeS defined seconds
+    if (millis() - lastmillis > sleepTimeS * 1000) { //do this if every sleepTimeS defined seconds - send data from sensors to database
       lastmillis = millis();
-      httpPOST1();
+      if (log_enable==1) {// only if logging enabled send data to database
+        httpPOST1();
+      }
     }
-    if (millis() - lastmillis2 > 1000) { //do this if every second
+    if (millis() - lastmillis2 > 1000) { //do this if every second - get states of relays and switches from database
       lastmillis2 = millis();
       if (counter1 > 0) { //count down counter with reset on zero
         counter1 = counter1 - 1;
@@ -178,6 +181,7 @@ void loop() {
       int val1 = doc["relay1"]; //asign acquired values to variables
       int val2 = doc["relay2"];
       automatic = doc["automatic"];
+      log_enable = doc["log_enable"];
 
       Serial.print("Relay: 1"); //print values on serial monitor for debug purposes
       Serial.print(" - SET to: ");
@@ -188,6 +192,9 @@ void loop() {
       Serial.print("Automatic");
       Serial.print(" - SET to: ");
       Serial.println(automatic);
+      Serial.print("Log enable");
+      Serial.print(" - SET to: ");
+      Serial.println(log_enable);
       if (automatic == 0) { //if manual control selected, than asign values to relays
         digitalWrite(RELAY1, !val1);
         digitalWrite(RELAY2, !val2);
@@ -196,7 +203,7 @@ void loop() {
         httpPOST2(); //send states of relays and auto/man control
       }
     }
-    if (millis() - lastmillis3 > 1 * 60 * 1000) { //reset error variable every 15 minutes - try pumping again when low water level in tank
+    if (millis() - lastmillis3 > 15 * 60 * 1000) { //reset error variable every 15 minutes - try pumping again when low water level in tank
       lastmillis3 = millis();
       error = 0;
       Serial.println(counter2);
